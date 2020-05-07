@@ -1,2 +1,2 @@
 # Tin Can Communicator
-## Chat app built with tcp sockets with a custom binary protocol.
+Chat app built in Golang with tcp sockets and a custom binary protocol.
