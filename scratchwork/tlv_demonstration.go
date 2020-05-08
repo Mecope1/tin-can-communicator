@@ -17,7 +17,7 @@ func main() {
 		RoomIDBytes: tlv_utils.OneByte,
 		PayloadBytes: tlv_utils.FourBytes}
 
-	wr := tlv_utils.NewWriter(buf, codec)
+	tlvWriter := tlv_utils.NewWriter(buf, codec)
 
 	record := &tlv_utils.Record {
 		Type: 0x8A,
@@ -28,7 +28,8 @@ func main() {
 		Payload: []byte("hello, go! DID YOU SEE THAT?!?!?!?!?!?!?!?!?"),
 	}
 
-	err	:= wr.Write(record)
+	err	:= tlvWriter.Write(record)
+
 	if err != nil {
 		fmt.Println ("ERROR WRITING: ", err)
 	}
