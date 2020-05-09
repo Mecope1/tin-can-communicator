@@ -33,8 +33,8 @@ type ClientManager struct {
 type Client struct {
 	socket net.Conn
 	data chan []byte
-	//ChatterID uint
-	//chatterName string
+	chatterName string
+	roomID uint
 }
 
 func startServerMode() {
@@ -57,7 +57,7 @@ func startServerMode() {
 		if err != nil {
 			fmt.Println(err)
 		}
-		client := &Client{socket:connection, data: make(chan []byte)}
+		client := &Client{socket:connection, data: make(chan []byte), chatterName:"N/A", roomID: 0}
 		goodClient := checkIncConn(client, &manager)
 		// authenticateUser()
 		if goodClient == true {
@@ -81,10 +81,13 @@ func checkIncConn (client *Client, man *ClientManager) bool {
 		if readingError != nil {
 			fmt.Println("Error decoding message: ", readingError)
 		} else if next.Type == 139 {
-			// Needs to be changed to check if the name already exists, else it will spam both people twice at least.
+			// Needs to be changed to check if the name already exists
+			// Currently if x people share a name, then each person will get x messages
 				man.ChatRoomOccupants[next.RoomID] = append(man.ChatRoomOccupants[next.RoomID], string(next.ChatterName))
 				fmt.Printf("%s joined room: %d\n", string(next.ChatterName), next.RoomID)
 				fmt.Printf("Room %d now has %d people in it\n", next.RoomID, len(man.ChatRoomOccupants[next.RoomID]))
+				client.chatterName = string(next.ChatterName)
+				client.roomID = next.RoomID
 			retVal = true
 		}
 	}
@@ -94,70 +97,6 @@ func checkIncConn (client *Client, man *ClientManager) bool {
 
 //  MAKE INTO SERVER-SIDE AUTH FN
 //func authenticateUser() {
-//	client := &Client{socket:connection, data: make(chan []byte)}
-//
-//
-//	codec := &tlv_utils.Codec{
-//		TypeBytes: tlv_utils.OneByte,
-//		VersionBytes: tlv_utils.OneByte,
-//		ChatterIDBytes: tlv_utils.OneByte,
-//		ChatterNameBytes: tlv_utils.TwoBytes,
-//		RoomIDBytes: tlv_utils.OneByte,
-//		PayloadBytes: tlv_utils.FourBytes,
-//	}
-//
-//	msg := make([]byte, 256)
-//	length, initReadErr := connection.Read(msg)
-//	if length > 0 && initReadErr == nil {
-//		reader := bytes.NewReader(msg)
-//		tlvReader := tlv_utils.NewReader(reader,  constCodec)
-//		next, readingError := tlvReader.Next()
-//		if readingError != nil {
-//			fmt.Println("Error decoding message: ", readingError)
-//		} else if readingError == nil && next.Type == 138{
-//			manager.register <- client
-//			go manager.receive(client)
-//			go manager.send(client)
-//		}
-//
-//	} else {
-//
-//		fmt.Println("Incorrect magic byte given by: ", connection.RemoteAddr())
-//
-//		buf := new(bytes.Buffer)
-//		codec := &tlv_utils.Codec{
-//			TypeBytes: tlv_utils.OneByte,
-//			VersionBytes: tlv_utils.OneByte,
-//			ChatterIDBytes: tlv_utils.OneByte,
-//			ChatterNameBytes: tlv_utils.TwoBytes,
-//			RoomIDBytes: tlv_utils.OneByte,
-//			PayloadBytes: tlv_utils.FourBytes}
-//
-//		tlvWriter := tlv_utils.NewWriter(buf,  constCodec)
-//
-//		errorMsg := &tlv_utils.Record{
-//			Type:        0x8A,
-//			Version:     1,
-//			RoomID:      0,
-//			ChatterID:   0,
-//			ChatterName: []byte("Server"),
-//			Payload:     []byte("Incorrect Magic Byte. Please ensure you are connecting to the correct server!!!"),
-//		}
-//
-//		tlvWrErr := tlvWriter.Write(errorMsg)
-//
-//		if tlvWrErr != nil {
-//			fmt.Println("Error during message construction: ", tlvWrErr.Error())
-//			continue
-//		} else {
-//			_, connWrErr := connection.Write(buf.Bytes())
-//			if connWrErr != nil {
-//				fmt.Println("Error writing to client channel: ", connWrErr)
-//			}
-//		}
-//		manager.unregister <- client
-//	}
-//}
 
 
 func startClientMode() {
@@ -165,24 +104,8 @@ func startClientMode() {
 	connection, err := net.Dial("tcp", "localhost:8080")
 	if err != nil {
 		panic(err)
-		// fmt.Println(err)
 	}
 	client := &Client{socket: connection}
-
-	//buf := new(bytes.Buffer)
-	//tlvWriter := tlv_utils.NewWriter(buf,  constCodec)
-
-
-	// temp_const
-	//codec := &tlv_utils.Codec{
-	//	TypeBytes: tlv_utils.OneByte,
-	//	VersionBytes: tlv_utils.OneByte,
-	//	ChatterIDBytes: tlv_utils.OneByte,
-	//	ChatterNameBytes: tlv_utils.TwoBytes,
-	//	RoomIDBytes: tlv_utils.OneByte,
-	//	PayloadBytes: tlv_utils.FourBytes}
-
-
 
 	var usrName string
 	var roomNum uint
@@ -194,7 +117,7 @@ func startClientMode() {
 		fmt.Print("Enter a username (3 or more chars): ")
 		usrNameInpt, err1 := myReader.ReadString('\n')
 		usrName = strings.TrimSpace(usrNameInpt)
-		fmt.Print("Enter a roomID (unsigned ints only!): " )
+		fmt.Print("Enter a roomID (from 1 to 255): " )
 		roomNumStr, err2 := myReader.ReadString('\n')
 
 		if err1 != nil {
@@ -206,7 +129,7 @@ func startClientMode() {
 		}
 
 		if roomInt, err := strconv.Atoi(strings.TrimSpace(roomNumStr)); err == nil {
-			if roomInt > 0 && len(usrName) >= 3  {
+			if roomInt >= 1 && roomInt <= 255 && len(usrName) >= 3  {
 				correctInput = true
 				roomNum = uint(roomInt)
 			}
@@ -220,16 +143,11 @@ func startClientMode() {
 	// Auth should happen here
 	magicByteTest(client, &usrName, &roomNum)
 
-	// Attempt to use ANSI escape chars
-	//var entryField *bytes.Buffer = new(bytes.Buffer)
-	//var usrOutput *bufio.Writer = bufio.NewWriter(os.Stdout)
-
 	for {
 		buf := new(bytes.Buffer)
 		tlvWriter := tlv_utils.NewWriter(buf, constCodec)
 		reader := bufio.NewReader(os.Stdin)
 		msg, _ := reader.ReadString('\n')
-		//fmt.Println("THING GOES HERE")
 		msg = strings.TrimRight(msg, "\n")
 
 		if len(msg) > 0 {
@@ -253,26 +171,15 @@ func startClientMode() {
 					panic(err)
 				}
 			}
-
-			// Attempt to use ANSI escape chars
-			//usrOutput.WriteString("\033[2J")
-			//fmt.Fprintf(entryField, "\033[1;1H")
-
-			// Pre-TLV usage
-			//_, err := connection.Write([]byte(strings.TrimRight(message, "\n")))
-			//if err != nil {
-			//	panic(err)
-			//}
 		}
 	}
 }
 
-// TURN INTO CLIENTSIDE AN AUTH FN
+// TURN INTO CLIENTSIDE AUTH FN
 func magicByteTest(client *Client, usrName *string, roomID *uint) {
 	buf := new(bytes.Buffer)
 	tlvWriter := tlv_utils.NewWriter(buf, constCodec)
 	rec := &tlv_utils.Record {
-
 		Type: 0x8B,
 		Version: 1,
 		RoomID: *roomID,
@@ -315,17 +222,41 @@ func (manager *ClientManager) start() {
 				fmt.Println("A connection has been terminated!")
 			}
 		case message := <-manager.broadcast:
+			record := decodeMsg(message)
 			for connection := range manager.clients {
-				select {
-				case connection.data <- message:
+				if connection.roomID == record.RoomID {
+					select {
+					case connection.data <- message:
 
-				default:
-					close(connection.data)
-					delete(manager.clients, connection)
+					default:
+						close(connection.data)
+						delete(manager.clients, connection)
+					}
 				}
 			}
 		}
 	}
+}
+
+func decodeMsg(msg []byte) tlv_utils.Record {
+	var record tlv_utils.Record
+
+	reader := bytes.NewReader(msg)
+	tlvReader := tlv_utils.NewReader(reader, constCodec)
+	next, readingError := tlvReader.Next()
+	if readingError != nil {
+		fmt.Println("ERROR: IMPROPER MESSAGE FORMAT: ", readingError)
+		record = tlv_utils.Record{
+			Type: 0x8B,
+			Version: 1,
+			RoomID: 255,
+			ChatterID: 0,
+			ChatterName: []byte(""),
+			Payload: []byte(""),}
+	} else {
+		record = *next
+	}
+	return record
 }
 
 func (manager *ClientManager) receive(client *Client) {
@@ -337,9 +268,8 @@ func (manager *ClientManager) receive(client *Client) {
 			client.socket.Close()
 			break
 		}
-
 		if length > 0 {
-			fmt.Println("RECEIVED:", string(hex.Dump(message[:length])))
+			fmt.Println("RECEIVED:", hex.Dump(message[:length]))
 			manager.broadcast <- message
 		}
 	}
@@ -353,9 +283,7 @@ func (manager *ClientManager) send(client *Client) {
 			if !ok {
 				return
 			}
-
 			_, err := client.socket.Write(msg)
-
 			if err != nil {
 				fmt.Println("ERROR WRITING TO SOCKET:", err)
 			}
@@ -364,17 +292,6 @@ func (manager *ClientManager) send(client *Client) {
 }
 
 func (client *Client) receive() {
-
-	//buf := new(bytes.Buffer)
-	//temp_const
-	// constCodec := &tlv_utils.Codec{
-	//	TypeBytes: tlv_utils.OneByte,
-	//	VersionBytes: tlv_utils.OneByte,
-	//	ChatterIDBytes: tlv_utils.OneByte,
-	//	ChatterNameBytes: tlv_utils.TwoBytes,
-	//	RoomIDBytes: tlv_utils.OneByte,
-	//	PayloadBytes: tlv_utils.FourBytes}
-
 	for {
 		msg := make([]byte, 256)
 		length, err := client.socket.Read(msg)

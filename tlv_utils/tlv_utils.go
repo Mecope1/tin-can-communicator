@@ -21,7 +21,7 @@ type Record struct {
 	Version uint
 	RoomID uint
 	ChatterID uint
-	ChatterName []byte //uint
+	ChatterName []byte
 	Payload []byte
 }
 
@@ -104,9 +104,6 @@ func writeUint(w io.Writer, b ByteSize, i uint) error {
 
 	return binary.Write(w, binary.BigEndian, num)
 }
-
-
-
 
 // READER SECTION
 type Reader struct {
