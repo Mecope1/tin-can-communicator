@@ -1,11 +1,12 @@
 # Tin Can Communicator
+
 Command line chat app built in Golang 1.13 with tcp sockets and a custom binary protocol.
 
 Currently a work in progress.
 
 ## Features
 * Chat with other people!
-* Has 255 possible chat rooms to join. (Room 0 is reserved for future use).
+* Has 255 possible chat rooms to join. (Room 0 is reserved for server-wide messages).
 These are numbered 1 through 255.
 * chat messages are only broadcast to members of the same chat room.
 * Utilizes a TLV style binary protocol to transfer messages.
@@ -32,7 +33,6 @@ These are numbered 1 through 255.
 
 ### References
 These are places that I had read from and that I found very helpful in building this.
-t I had read from and that I found very helpful in building this.t I had read from and that I found very helpful in building this.
 * [gobyexample.com](gobyexample.com)
 * [golangbot.com](golangbot.com)
 * [https://searchnetworking.techtarget.com/tutorial/Protocols-Lesson-2-Binary-and-the-Internet-Protocol](https://searchnetworking.techtarget.com/tutorial/Protocols-Lesson-2-Binary-and-the-Internet-Protocol)
