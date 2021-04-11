@@ -8,33 +8,32 @@ import (
 )
 
 type ClientManager struct {
-	clients map [*Client]bool
-	ChatRoomOccupants map [uint][]string
-	broadcast chan []byte
-	register chan *Client
-	unregister chan *Client
+	clients           map[*Client]bool
+	ChatRoomOccupants map[uint][]string
+	broadcast         chan []byte
+	register          chan *Client
+	unregister        chan *Client
 }
 
 type Client struct {
-	socket net.Conn
-	data chan []byte
+	socket      net.Conn
+	data        chan []byte
 	chatterName string
-	roomID uint
+	roomID      uint
 }
-
 
 func StartServerMode(port string) {
 	fmt.Println("Starting server. Listening on port", port)
-	listener, err := net.Listen("tcp", ":" + port)
+	listener, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		fmt.Println(err)
 	}
-	manager := ClientManager {
-		clients: make(map[*Client]bool),
+	manager := ClientManager{
+		clients:           make(map[*Client]bool),
 		ChatRoomOccupants: make(map[uint][]string),
-		broadcast: make(chan []byte),
-		register: make(chan *Client),
-		unregister: make(chan *Client),
+		broadcast:         make(chan []byte),
+		register:          make(chan *Client),
+		unregister:        make(chan *Client),
 	}
 
 	go manager.start()
@@ -44,7 +43,7 @@ func StartServerMode(port string) {
 		if err != nil {
 			fmt.Println(err)
 		}
-		client := &Client{socket:connection, data: make(chan []byte), chatterName:"N/A", roomID: 0}
+		client := &Client{socket: connection, data: make(chan []byte), chatterName: "N/A", roomID: 0}
 		goodClient := checkIncConn(client, &manager)
 		// authenticateUser()
 		if goodClient == true {
@@ -57,7 +56,7 @@ func StartServerMode(port string) {
 	}
 }
 
-func checkIncConn (client *Client, man *ClientManager) bool {
+func checkIncConn(client *Client, man *ClientManager) bool {
 	msgBytes := make([]byte, 256)
 	retVal := false
 	length, initReadErr := client.socket.Read(msgBytes)
@@ -84,7 +83,7 @@ func checkIncConn (client *Client, man *ClientManager) bool {
 func (manager *ClientManager) start() {
 	for {
 		select {
-		case connection := <- manager.register:
+		case connection := <-manager.register:
 			manager.clients[connection] = true
 			fmt.Println("Added new connection!")
 		case connection := <-manager.unregister:
@@ -145,4 +144,3 @@ func (manager *ClientManager) send(client *Client) {
 		}
 	}
 }
-

@@ -7,7 +7,6 @@ import (
 	"strings"
 )
 
-
 func main() {
 	// Server and client startup functions go here!
 	// The two options for this flag are server or client, depending on what function is desired
@@ -27,4 +26,3 @@ func main() {
 		tccclient.StartClientMode(*flagServerAddr)
 	}
 }
-

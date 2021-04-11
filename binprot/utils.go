@@ -10,28 +10,28 @@ import (
 type ByteSize int
 
 const (
-	OneByte ByteSize = 1
-	TwoBytes ByteSize = 2
-	FourBytes ByteSize = 4
+	OneByte    ByteSize = 1
+	TwoBytes   ByteSize = 2
+	FourBytes  ByteSize = 4
 	EightBytes ByteSize = 8
 )
 
 var RecordCodec = &Codec{
-	TypeBytes: OneByte,
-	VersionBytes: OneByte,
-	ChatterIDBytes: OneByte,
+	TypeBytes:        OneByte,
+	VersionBytes:     OneByte,
+	ChatterIDBytes:   OneByte,
 	ChatterNameBytes: TwoBytes,
-	RoomIDBytes: OneByte,
-	PayloadBytes: FourBytes,
+	RoomIDBytes:      OneByte,
+	PayloadBytes:     FourBytes,
 }
 
 type Record struct {
-	Type uint
-	Version uint
-	RoomID uint
-	ChatterID uint
+	Type        uint
+	Version     uint
+	RoomID      uint
+	ChatterID   uint
 	ChatterName []byte
-	Payload []byte
+	Payload     []byte
 }
 
 type Codec struct {
@@ -43,15 +43,13 @@ type Codec struct {
 	PayloadBytes     ByteSize // Number of bytes used for the length field
 }
 
-
 // WRITER SECTION
 type TLVWriter struct {
 	writer io.Writer
-	codec *Codec
+	codec  *Codec
 }
 
-
-func newWriter( w io.Writer, codec *Codec) *TLVWriter {
+func newWriter(w io.Writer, codec *Codec) *TLVWriter {
 	newWriter := TLVWriter{w, codec}
 	return &newWriter
 }
@@ -61,7 +59,6 @@ func (w *TLVWriter) write(rec *Record) error {
 	if err != nil {
 		return err
 	}
-
 
 	err = writeUint(w.writer, w.codec.VersionBytes, rec.Version)
 	if err != nil {
@@ -103,32 +100,30 @@ func writeUint(w io.Writer, b ByteSize, i uint) error {
 	var num interface{}
 	switch b {
 	case OneByte:
-		num=uint8(i)
+		num = uint8(i)
 	case TwoBytes:
-		num=uint16(i)
+		num = uint16(i)
 	case FourBytes:
-		num=uint32(i)
+		num = uint32(i)
 	case EightBytes:
-		num=uint64(i)
+		num = uint64(i)
 	}
 
 	return binary.Write(w, binary.BigEndian, num)
 }
 
-
 // READER SECTION
 type Reader struct {
-	codec *Codec
+	codec  *Codec
 	reader io.Reader
 }
-
 
 func newReader(reader io.Reader, codec *Codec) *Reader {
 	newReader := Reader{codec, reader}
 	return &newReader
 }
 
-func(r *Reader) next() (*Record, error) {
+func (r *Reader) next() (*Record, error) {
 
 	// Read in the bytes that make up the type field
 	typeBytes := make([]byte, r.codec.TypeBytes)
@@ -197,7 +192,7 @@ func(r *Reader) next() (*Record, error) {
 		return nil, err
 	}
 
-	return &Record {
+	return &Record{
 		recType,
 		recVersion,
 		recRoomID,
@@ -213,28 +208,28 @@ func readUint(byteSli []byte, fieldSize ByteSize) uint {
 	case OneByte:
 		var tempUInt uint8
 		err := binary.Read(reader, binary.BigEndian, &tempUInt)
-		if err != nil{
+		if err != nil {
 			fmt.Print("ERROR ONEBYTE: ", err)
 		}
 		return uint(tempUInt)
 	case TwoBytes:
 		var tempUInt uint16
 		err := binary.Read(reader, binary.BigEndian, &tempUInt)
-		if err != nil{
+		if err != nil {
 			fmt.Print("ERROR TWOBYTES: ", err)
 		}
 		return uint(tempUInt)
 	case FourBytes:
 		var tempUInt uint32
 		err := binary.Read(reader, binary.BigEndian, &tempUInt)
-		if err != nil{
+		if err != nil {
 			fmt.Print("ERROR FOURBYTES: ", err)
 		}
 		return uint(tempUInt)
 	case EightBytes:
 		var tempUInt uint64
 		err := binary.Read(reader, binary.BigEndian, &tempUInt)
-		if err != nil{
+		if err != nil {
 			fmt.Print("ERROR EIGHTBYTES: ", err)
 		}
 		return uint(tempUInt)
@@ -242,7 +237,6 @@ func readUint(byteSli []byte, fieldSize ByteSize) uint {
 		return 0
 	}
 }
-
 
 // Exported functions
 func DecodeMsg(msg []byte) (Record, error) {
@@ -254,12 +248,12 @@ func DecodeMsg(msg []byte) (Record, error) {
 
 	if readingError != nil {
 		record = Record{
-			Type: 0x8C,
-			Version: 1,
-			RoomID: 0,
-			ChatterID: 0,
+			Type:        0x8C,
+			Version:     1,
+			RoomID:      0,
+			ChatterID:   0,
 			ChatterName: []byte("ERROR"),
-			Payload: []byte("ERROR"),}
+			Payload:     []byte("ERROR")}
 	} else {
 		record = *next
 	}
@@ -271,13 +265,13 @@ func EncodeMsg(msgType uint, msg string, usrName string, roomNum uint) (*bytes.B
 	buf := new(bytes.Buffer)
 	tlvWriter := newWriter(buf, RecordCodec)
 	record := &Record{
-			Type:        msgType,
-			Version:     1,
-			RoomID:      roomNum,
-			ChatterID:   255,
-			ChatterName: []byte(usrName),
-			Payload:     []byte(msg),
-		}
+		Type:        msgType,
+		Version:     1,
+		RoomID:      roomNum,
+		ChatterID:   255,
+		ChatterName: []byte(usrName),
+		Payload:     []byte(msg),
+	}
 
 	err := tlvWriter.write(record)
 

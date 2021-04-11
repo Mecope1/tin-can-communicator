@@ -5,15 +5,14 @@ import (
 	"testing"
 )
 
-
 func TestEncodeMsg(t *testing.T) {
 	ans, err := EncodeMsg(0x8A, "Hello, World!", "user1", 2)
 	ansByteSli := ans.Bytes()
 
-	fmt.Println("ansByteSli",ansByteSli)
+	fmt.Println("ansByteSli", ansByteSli)
 	encodedByteSli := []byte{
 		138, 1, 2, 255, 0, 5, 117, 115, 101, 114, 49, 0, 0, 0, 13, 72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 33,
-		}
+	}
 	if err != nil {
 		t.Errorf("EncodeMsg(0x8A, \"Hello, World!\", \"user1\", 2) failed encoding")
 	}
@@ -52,7 +51,7 @@ func TestDecodeMsg(t *testing.T) {
 	if err != nil {
 		t.Errorf("DecodeMsg(msg) failed encoding")
 	} else if fmt.Sprintf("%T", msg) != "binprot.Record" {
-		t.Errorf("EncodeMsg(msg) produced %s expected binprot.Record", fmt.Sprintf("%T", msg) )
+		t.Errorf("EncodeMsg(msg) produced %s expected binprot.Record", fmt.Sprintf("%T", msg))
 	} else {
 		// Checks fields from the decoded message
 		switch {

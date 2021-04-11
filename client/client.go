@@ -11,12 +11,11 @@ import (
 )
 
 type Client struct {
-	socket net.Conn
-	data chan []byte
+	socket      net.Conn
+	data        chan []byte
 	chatterName string
-	roomID uint
+	roomID      uint
 }
-
 
 func StartClientMode(serverAddr string) {
 	fmt.Println("Starting client. Dialing", serverAddr)
@@ -36,7 +35,7 @@ func StartClientMode(serverAddr string) {
 		fmt.Print("Enter a username (3 or more chars): ")
 		usrNameInpt, err1 := myReader.ReadString('\n')
 		usrName = strings.TrimSpace(usrNameInpt)
-		fmt.Print("Enter a roomID (from 1 to 255): " )
+		fmt.Print("Enter a roomID (from 1 to 255): ")
 		roomNumStr, err2 := myReader.ReadString('\n')
 
 		if err1 != nil {
@@ -47,7 +46,7 @@ func StartClientMode(serverAddr string) {
 		}
 
 		if roomInt, err := strconv.Atoi(strings.TrimSpace(roomNumStr)); err == nil {
-			if roomInt >= 1 && roomInt <= 255 && len(usrName) >= 3  {
+			if roomInt >= 1 && roomInt <= 255 && len(usrName) >= 3 {
 				correctInput = true
 				roomNum = uint(roomInt)
 			}
@@ -77,7 +76,7 @@ func StartClientMode(serverAddr string) {
 				msg = msg[:200]
 			}
 
-			buf, err:= bp.EncodeMsg(0x8A, msg, usrName, roomNum)
+			buf, err := bp.EncodeMsg(0x8A, msg, usrName, roomNum)
 
 			if err != nil {
 				fmt.Println("Error during message construction: ", err.Error())

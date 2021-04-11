@@ -1,6 +1,5 @@
 package server
 
-
 //func TestStartServerMode(t *testing.T) {
 //	StartServerMode("12345")
 //	// Output: Starting server. Listening on port 12345
