@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"testing"
 )
-//
+
+
 func TestEncodeMsg(t *testing.T) {
 	ans, err := EncodeMsg(0x8A, "Hello, World!", "user1", 2)
 	ansByteSli := ans.Bytes()

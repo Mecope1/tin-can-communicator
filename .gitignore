@@ -1,3 +1,1 @@
-# Intellij files
-*.iml
-*.idea
+# Currently nothing besides the contents of the .gitignore in the .idea folder.

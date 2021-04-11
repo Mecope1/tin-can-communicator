@@ -1,6 +1,5 @@
 package client
 
-
 import (
 	"bufio"
 	"fmt"
@@ -17,6 +16,7 @@ type Client struct {
 	chatterName string
 	roomID uint
 }
+
 
 func StartClientMode(serverAddr string) {
 	fmt.Println("Starting client. Dialing", serverAddr)
@@ -81,7 +81,6 @@ func StartClientMode(serverAddr string) {
 
 			if err != nil {
 				fmt.Println("Error during message construction: ", err.Error())
-				continue
 			} else {
 				_, err := connection.Write(buf.Bytes())
 				if err != nil {
@@ -94,7 +93,8 @@ func StartClientMode(serverAddr string) {
 
 func magicByteTest(client *Client, usrName string, roomID uint) {
 
-	// Special byte 0x8B is used rather than the usual 0x8A for standard messages.
+	// Special byte 0x8B is used rather than the usual 0x8A for standard messages. The server will reject the client
+	// if any other bit is used!
 	buf, err := bp.EncodeMsg(0x8B, "", usrName, roomID)
 
 	if err != nil {
@@ -122,7 +122,7 @@ func (client *Client) receive() {
 			msg, decodeErr := bp.DecodeMsg(msgBytes)
 			if decodeErr != nil {
 				fmt.Println("Error decoding message: ", decodeErr)
-			} else  {
+			} else if string(msg.ChatterName) != client.chatterName {
 				fmt.Printf("In Room#%d |%s| Said: %s\n", msg.RoomID, string(msg.ChatterName), string(msg.Payload))
 			}
 		}

@@ -43,6 +43,7 @@ type Codec struct {
 	PayloadBytes     ByteSize // Number of bytes used for the length field
 }
 
+
 // WRITER SECTION
 type TLVWriter struct {
 	writer io.Writer
@@ -54,7 +55,6 @@ func newWriter( w io.Writer, codec *Codec) *TLVWriter {
 	newWriter := TLVWriter{w, codec}
 	return &newWriter
 }
-
 
 func (w *TLVWriter) write(rec *Record) error {
 	err := writeUint(w.writer, w.codec.TypeBytes, rec.Type)
@@ -99,7 +99,6 @@ func (w *TLVWriter) write(rec *Record) error {
 	return err
 }
 
-
 func writeUint(w io.Writer, b ByteSize, i uint) error {
 	var num interface{}
 	switch b {
@@ -128,7 +127,6 @@ func newReader(reader io.Reader, codec *Codec) *Reader {
 	newReader := Reader{codec, reader}
 	return &newReader
 }
-
 
 func(r *Reader) next() (*Record, error) {
 
@@ -209,7 +207,6 @@ func(r *Reader) next() (*Record, error) {
 	}, nil
 }
 
-
 func readUint(byteSli []byte, fieldSize ByteSize) uint {
 	reader := bytes.NewReader(byteSli)
 	switch fieldSize {
@@ -268,7 +265,6 @@ func DecodeMsg(msg []byte) (Record, error) {
 	}
 	return record, readingError
 }
-
 
 func EncodeMsg(msgType uint, msg string, usrName string, roomNum uint) (*bytes.Buffer, error) {
 

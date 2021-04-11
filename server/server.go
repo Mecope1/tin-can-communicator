@@ -22,6 +22,7 @@ type Client struct {
 	roomID uint
 }
 
+
 func StartServerMode(port string) {
 	fmt.Println("Starting server. Listening on port", port)
 	listener, err := net.Listen("tcp", ":" + port)
@@ -33,7 +34,8 @@ func StartServerMode(port string) {
 		ChatRoomOccupants: make(map[uint][]string),
 		broadcast: make(chan []byte),
 		register: make(chan *Client),
-		unregister: make(chan *Client)}
+		unregister: make(chan *Client),
+	}
 
 	go manager.start()
 
@@ -79,10 +81,6 @@ func checkIncConn (client *Client, man *ClientManager) bool {
 	return retVal
 }
 
-
-//  MAKE INTO SERVER-SIDE AUTH FN
-//func authenticateUser() {
-
 func (manager *ClientManager) start() {
 	for {
 		select {
@@ -99,7 +97,7 @@ func (manager *ClientManager) start() {
 			record, err := bp.DecodeMsg(message)
 			if err == nil {
 				for connection := range manager.clients {
-					if connection.roomID == record.RoomID && connection.chatterName != string(record.ChatterName) {
+					if connection.roomID == record.RoomID {
 						select {
 						case connection.data <- message:
 

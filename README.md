@@ -5,19 +5,19 @@ Command line chat app built in Golang 1.13 with tcp sockets and a custom binary 
 Currently a work in progress.
 
 ## Features
-* Chat with other people!
+* Chat with other people using the command line!
 * Has 255 possible chat rooms to join. (Room 0 is reserved for server-wide messages).
 These are numbered 1 through 255.
 * chat messages are only broadcast to members of the same chat room.
-* Utilizes a TLV style binary protocol to transfer messages.
+* Utilizes a TLV style binary protocol to encode messages.
 
 ## Basic Usage
 ### Server
-1. Build the executable using `go run config.go -mode=server -port=####`
-2. When you want to stop the server, simply press ctrl+c.
+1. Build and run the executable using `go run config.go -mode=server -port=####`
+2. When you want to stop the server, simply press ctrl+c. (This will disconnect all clients immediately!)
 
 ### Client
-1. Build the executable using `go run config.go -mode=client -address=your.address.goes.here:####`
+1. Build and run the executable using `go run config.go -mode=client -address=your.address.goes.here:####`
 2. Enter a username.
 3. Enter a desired chat room number (1-255).
 4. Chat!
