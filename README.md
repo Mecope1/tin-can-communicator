@@ -24,10 +24,19 @@ Currently a work in progress.
 
 ## To Do
 * Add in additional tests
-* Make error handling more robust
-* Allow users to easily join a different room or multiple rooms.
-* Setup auth system, allowing persistent users.
-* Create database for storage of chat logs. 
+* Make error handling even more robust
+* Allow users to easily join a different room
+* Integrate a database to store chat logs
+* Setup auth system, allowing persistent users
+* Allow users to send requests to my [unit-converter api/ web app](https://convert-this.herokuapp.com/) from the chat app
+
+### Extra Repos
+Here are some other repositories that I created to test out new libraries, or explore some concepts
+* https://github.com/Mecope1/serialization_comparison: Compares benchmarks for encoding and decoding the chat app's 
+TLV protocol to Json and MessagePack for some sample payloads.
+
+* https://github.com/Mecope1/go-tui-testing: Sandbox where I played around with the Termui library to see how I could 
+ use it in the chat app.
 
 ### References
 These are places that I had read from and that I found very helpful in building this.
