@@ -7,6 +7,7 @@ Currently a work in progress.
 ## Features
 * Chat with other people using the command line!
 * 256 Chat rooms available. (numbered 0-255)
+* 200 character limit per message
 * Chat messages are only broadcast to members of the same chat room.
 * Utilizes a TLV style binary protocol to encode and decode messages.
 
