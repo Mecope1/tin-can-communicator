@@ -46,11 +46,11 @@ func StartServerMode(port string) {
 		client := &Client{socket: connection, data: make(chan []byte), chatterName: "N/A", roomID: 0}
 		goodClient := checkIncConn(client, &manager)
 		// authenticateUser()
-		if goodClient == true {
+		if goodClient {
 			manager.register <- client
 			go manager.receive(client)
 			go manager.send(client)
-		} else if goodClient == false {
+		} else {
 			client.socket.Close()
 		}
 	}

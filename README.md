@@ -6,10 +6,9 @@ Currently a work in progress.
 
 ## Features
 * Chat with other people using the command line!
-* Has 255 possible chat rooms to join. (Room 0 is reserved for server-wide messages).
-These are numbered 1 through 255.
-* chat messages are only broadcast to members of the same chat room.
-* Utilizes a TLV style binary protocol to encode messages.
+* 256 Chat rooms available. (numbered 0-255)
+* Chat messages are only broadcast to members of the same chat room.
+* Utilizes a TLV style binary protocol to encode and decode messages.
 
 ## Basic Usage
 ### Server
@@ -18,18 +17,17 @@ These are numbered 1 through 255.
 
 ### Client
 1. Build and run the executable using `go run config.go -mode=client -address=your.address.goes.here:####`
-2. Enter a username.
-3. Enter a desired chat room number (1-255).
+2. Enter a username (3+ characters).
+3. Enter a desired chat room number (0-255).
 4. Chat!
-5. When you're finished, simply press ctrl+c to quit.
+5. When you're finished, simply press ctrl+c or the escape key to quit.
 
 ## To Do
 * Add in additional tests
 * Make error handling more robust
 * Allow users to easily join a different room or multiple rooms.
-* Use room 0 better for messages originating from the server. (Shutdown message, or general news and tips)
-* Setup auth system to create users that are persistent.
-* Create database for persistent storage of chat logs. 
+* Setup auth system, allowing persistent users.
+* Create database for storage of chat logs. 
 
 ### References
 These are places that I had read from and that I found very helpful in building this.

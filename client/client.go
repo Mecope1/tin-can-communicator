@@ -24,7 +24,7 @@ func StartClientMode(serverAddr string) {
 	fmt.Println("Starting client. Dialing", serverAddr)
 	connection, err := net.Dial("tcp", serverAddr)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	client := &Client{socket: connection}
 
@@ -52,18 +52,15 @@ func StartClientMode(serverAddr string) {
 			if roomInt >= 1 && roomInt <= 255 && len(usrName) >= 3 {
 				correctInput = true
 				roomNum = uint(roomInt)
+			} else {
+				fmt.Println("Incorrect username or room number.")
 			}
-		} else {
-			fmt.Println("Incorrect username or room number.")
 		}
 	}
 
 	// Store these values in the client object so that they can be passed around as needed.
 	client.chatterName = usrName
 	client.roomID = roomNum
-
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// BEGIN NEW UI WORK //
 
 	if err := ui.Init(); err != nil {
 		log.Fatalf("failed to initialize termui: %v", err)
@@ -106,17 +103,16 @@ func StartClientMode(serverAddr string) {
 
 	ui.Render(grid)
 
+	// Very basic authentication. Sends a Record containing a specific magic byte to the server. If the server doesn't
+	// receive that byte, then it will close the connection.
+	client.magicByteTest()
+
 	// Triggers go routine that will listen for messages being broadcast from the server.
 	go client.receive(p, grid)
-
-	// Very basic authentication. Sends a record containing a specific magic byte to the server. If the server doesn't
-	// receive that byte before other communications happen, then the server will close the connection.
-	client.magicByteTest()
 
 	for e := range ui.PollEvents() {
 		if e.Type == ui.ResizeEvent {
 			termWidth, termHeight := ui.TerminalDimensions()
-			// This line redefines the size of the application, which is necessary when the terminal itself is resized.
 			grid.SetRect(0, 0, termWidth, termHeight)
 		} else if e.Type == ui.KeyboardEvent || e.Type == ui.MouseEvent {
 			switch e.ID {
@@ -138,10 +134,8 @@ func StartClientMode(serverAddr string) {
 			case "<MouseWheelDown>":
 				p.ScrollDown()
 			case "<Enter>":
-				//p.Rows = append(p.Rows, q.Text)
 				client.sendMessage(q)
 				q.Text = ""
-				//p.ScrollDown()
 			case "<Backspace>":
 				if len(q.Text) > 0 {
 					chars := strings.Split(q.Text, "")
@@ -182,36 +176,6 @@ func StartClientMode(serverAddr string) {
 		ui.Clear()
 		ui.Render(grid)
 	}
-
-	// END NEW UI WORK //
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	// Here the client will take input from the user and if it is well formed, it will write it to a channel that the
-	// server receives from.
-	//for {
-	//	reader := bufio.NewReader(os.Stdin)
-	//	msg, _ := reader.ReadString('\n')
-	//	msg = strings.TrimRight(msg, "\n")
-	//
-	//	if len(msg) > 0 {
-	//
-	//		if len(msg) > 200 {
-	//			fmt.Println("Message must be less than 200 characters. Message truncated.")
-	//			msg = msg[:200]
-	//		}
-	//
-	//		buf, err := bp.EncodeMsg(0x8A, msg, usrName, roomNum)
-	//
-	//		if err != nil {
-	//			fmt.Println("Error during message construction: ", err.Error())
-	//		} else {
-	//			_, err := connection.Write(buf.Bytes())
-	//			if err != nil {
-	//				panic(err)
-	//			}
-	//		}
-	//	}
-	//}
 }
 
 func (client *Client) sendMessage(typingBox *widgets.Paragraph) {
@@ -220,7 +184,7 @@ func (client *Client) sendMessage(typingBox *widgets.Paragraph) {
 	if len(msg) > 0 {
 
 		if len(msg) > 200 {
-			fmt.Println("Message must be less than 200 characters. Message truncated.")
+			typingBox.Text = "Message must be less than 200 characters. Message truncated."
 			msg = msg[:200]
 		}
 
@@ -231,7 +195,8 @@ func (client *Client) sendMessage(typingBox *widgets.Paragraph) {
 		} else {
 			_, err := client.socket.Write(buf.Bytes())
 			if err != nil {
-				panic(err)
+				ui.Close()
+				log.Fatal(err)
 			}
 		}
 
@@ -243,7 +208,7 @@ func (client *Client) sendMessage(typingBox *widgets.Paragraph) {
 func (client *Client) magicByteTest() {
 
 	// Special byte 0x8B is used rather than the usual 0x8A for standard messages. The server will reject the client
-	// if any other bit is used!
+	// if any other byte is used!
 	buf, err := bp.EncodeMsg(0x8B, "", client.chatterName, client.roomID)
 
 	if err != nil {
@@ -251,22 +216,22 @@ func (client *Client) magicByteTest() {
 	} else {
 		_, err := client.socket.Write(buf.Bytes())
 		if err != nil {
+			ui.Close()
 			client.socket.Close()
-			panic(err)
+			log.Fatal(err)
 		}
 	}
 }
 
 func (client *Client) receive(chatBox *widgets.List, grid *ui.Grid) {
-	//chatBox.Rows = append(chatBox.Rows, "LISTENING" )
-	for {
 
+	for {
 		msgBytes := make([]byte, 256)
 		length, err := client.socket.Read(msgBytes)
-		//chatBox.Rows = append(chatBox.Rows, "NEW MESSAGE" )
 		if err != nil {
+			ui.Close()
 			client.socket.Close()
-			panic(err)
+			log.Fatal(err)
 		}
 
 		if length > 0 {
