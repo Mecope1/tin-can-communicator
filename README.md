@@ -23,6 +23,14 @@ Currently a work in progress.
 4. Chat!
 5. When you're finished, simply press ctrl+c or the escape key to quit.
 
+## Extra Repos
+Here are some other repositories that I created to test out new libraries, or explore some concepts
+* https://github.com/Mecope1/serialization_comparison: Compares benchmarks for encoding and decoding the chat app's 
+TLV protocol to Json and MessagePack for some sample payloads.
+
+* https://github.com/Mecope1/go-tui-testing: Sandbox where I played around with the Termui library to see how I could 
+ use it in the chat app.
+
 ## To Do
 * Add in additional tests
 * Make error handling even more robust
@@ -31,13 +39,7 @@ Currently a work in progress.
 * Setup auth system, allowing persistent users
 * Allow users to send requests to my [unit-converter api/ web app](https://convert-this.herokuapp.com/) from the chat app
 
-### Extra Repos
-Here are some other repositories that I created to test out new libraries, or explore some concepts
-* https://github.com/Mecope1/serialization_comparison: Compares benchmarks for encoding and decoding the chat app's 
-TLV protocol to Json and MessagePack for some sample payloads.
 
-* https://github.com/Mecope1/go-tui-testing: Sandbox where I played around with the Termui library to see how I could 
- use it in the chat app.
 
 ### References
 These are places that I had read from and that I found very helpful in building this.
